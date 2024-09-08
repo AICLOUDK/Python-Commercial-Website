@@ -1,0 +1,44 @@
+from flask import Flask, render_template, redirect, url_for, request, session
+from flask_sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SECRET_KEY'] = 'your_secret_key'
+db = SQLAlchemy(app)
+
+# Database model
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+
+with app.app_context():
+    db.create_all()
+    # Uncomment the following two lines to add initial products
+    # db.session.add(Product(name='Sample Product 1', price=10.99))
+    # db.session.commit()
+
+@app.route('/')
+def index():
+    products = Product.query.all()
+    return render_template('index.html', products=products)
+
+@app.route('/add_to_cart/<int:product_id>')
+def add_to_cart(product_id):
+    if 'cart' not in session:
+        session['cart'] = []
+    session['cart'].append(product_id)
+    session.modified = True
+    return redirect(url_for('index'))
+
+@app.route('/cart')
+def cart():
+    if 'cart' in session:
+        product_ids = session['cart']
+        products = Product.query.filter(Product.id.in_(product_ids)).all()
+    else:
+        products = []
+    return render_template('cart.html', products=products)
+
+if __name__ == '__main__':
+    app.run(debug=True)
