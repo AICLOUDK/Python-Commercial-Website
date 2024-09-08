@@ -1,0 +1,9 @@
+ecommerce_site/
+    ├── app.py
+    ├── database.db
+    ├── static/
+    │   └── style.css
+    └── templates/
+        ├── base.html
+        ├── index.html
+        └── cart.html
